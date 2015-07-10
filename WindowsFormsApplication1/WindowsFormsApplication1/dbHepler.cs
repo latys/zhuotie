@@ -6,15 +6,16 @@ using System.Data.SQLite;
 using System.Data;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Data;
 
 namespace WindowsFormsApplication1
 {
     class dbHepler
     {
-        private SQLiteConnection sql_con;
-        private SQLiteCommand sql_cmd;
-        private SQLiteDataAdapter DB;
-        private DataSet DS = new DataSet();
+        public SQLiteConnection sql_con;
+        public SQLiteCommand sql_cmd;
+        public SQLiteDataAdapter DB;
+        public DataSet DS = new DataSet();
         private DataTable DT = new DataTable();
         private String myPath;
         private String filename = "\\quekaomingdan.csv";
@@ -22,7 +23,7 @@ namespace WindowsFormsApplication1
         public void SetConnection()
         {
             sql_con = new SQLiteConnection
-                ("Data Source=" + myPath + "\\DemoT.db");
+                ("Data Source=DemoT.db");
         }
 
         public void ExecuteQuery(string txtQuery)
@@ -35,7 +36,7 @@ namespace WindowsFormsApplication1
             sql_con.Close();
         }
 
-        private void LoadData(string zkzh)
+        private void LoadData1(string zkzh)
         {
             SetConnection();
             sql_con.Open();
@@ -82,5 +83,26 @@ namespace WindowsFormsApplication1
 
             sql_con.Close();
         }
+        public DataSet LoadData(string CommandText)
+        {
+            SetConnection();
+            sql_con.Open();
+            //sql_cmd = sql_con.CreateCommand();
+            SQLiteCommand cmd = new System.Data.SQLite.SQLiteCommand();
+           // cmd.CommandText = "select name, XH,SFZH,ZKZH from [20028] where [ZKZH]=" + zkzh;
+           // cmd.Connection = sql_con;
+            
+            DB = new SQLiteDataAdapter(CommandText,sql_con); 
+            DS.Reset(); 
+            DB.Fill(DS); 
+		
+            
+
+
+            sql_con.Close();
+            return DS;
+        
+        }
+
     }
 }
