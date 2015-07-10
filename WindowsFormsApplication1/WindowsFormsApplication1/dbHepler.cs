@@ -13,6 +13,7 @@ namespace WindowsFormsApplication1
     class dbHepler
     {
         public SQLiteConnection sql_con;
+        private  SQLiteTransaction _sqLiteTransaction;
         public SQLiteCommand sql_cmd;
         public SQLiteDataAdapter DB;
         public DataSet DS = new DataSet();
@@ -25,7 +26,26 @@ namespace WindowsFormsApplication1
             sql_con = new SQLiteConnection
                 ("Data Source=DemoT.db");
         }
-
+        public void open()
+        {
+            SetConnection();
+            sql_con.Open();
+            _sqLiteTransaction = sql_con.BeginTransaction();
+            sql_cmd = sql_con.CreateCommand();
+        }
+        public void close()
+        {
+            _sqLiteTransaction.Commit();
+            _sqLiteTransaction.Dispose(); 
+            sql_con.Close();
+        }
+        public void Query(string txtQuery)
+        {
+           
+            sql_cmd.CommandText = txtQuery;
+            sql_cmd.ExecuteNonQuery();
+            
+        }
         public void ExecuteQuery(string txtQuery)
         {
             SetConnection();
@@ -40,6 +60,7 @@ namespace WindowsFormsApplication1
         {
             SetConnection();
             sql_con.Open();
+           
             //sql_cmd = sql_con.CreateCommand();
             SQLiteCommand cmd = new System.Data.SQLite.SQLiteCommand();
             cmd.CommandText = "select name, XH,SFZH,ZKZH from [20028] where [ZKZH]=" + zkzh;

@@ -113,10 +113,10 @@ namespace WindowsFormsApplication1
                 Excel.Range rng2 = ws.Cells.get_Range("G2", "G" + rowsint);  //准考证
                 Excel.Range rng3 = ws.Cells.get_Range("H2", "H" + rowsint);  //姓名
                 Excel.Range rng4 = ws.Cells.get_Range("W2", "W" + rowsint);  //学号
-                object[,] arry1 = (object[,])rng1.Value2;   //get range's value  
-                object[,] arry2 = (object[,])rng2.Value2;
-                object[,] arry3 = (object[,])rng3.Value2;   //get range's value  
-                object[,] arry4 = (object[,])rng4.Value2;
+                object[] arry1 = (object[])rng1.Value2;   //get range's value  
+                object[] arry2 = (object[])rng2.Value2;
+                object[] arry3 = (object[])rng3.Value2;   //get range's value  
+                object[] arry4 = (object[])rng4.Value2;
                 //将新值赋给一个数组  
                 
 
@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
 
                     //Form1.progressBar1.Value = i * 100 / (rowsint - 2);
                     
-                    strinsert = String.Format("insert into [20028] (name,XH,ZKZH,级别语言) values ('{0}','{1}','{2}','{3}')", arry3[i, 1].ToString(), arry4[i, 1].ToString(), arry2[i, 1].ToString(), arry1[i, 1].ToString());
+                    strinsert = String.Format("insert into [20028] (name,XH,ZKZH,级别语言) values ('{0}','{1}','{2}','{3}')", arry3[i].ToString(), arry4[i].ToString(), arry2[i].ToString(), arry1[i].ToString());
                     db.ExecuteQuery(strinsert);
                 }
 

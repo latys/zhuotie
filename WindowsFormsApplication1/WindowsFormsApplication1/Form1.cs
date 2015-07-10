@@ -53,10 +53,11 @@ namespace WindowsFormsApplication1
             {
                 this.Invoke(new setStatusDelegate1(setStatus));
                 dbHepler db = new dbHepler();
-                db.open();
+                
                 string strdel = "delete  from [20028]";
                 string strinsert;
                 db.ExecuteQuery(strdel);
+                db.open();
                 object missing = System.Reflection.Missing.Value;
                 Excel.Application excel = new Excel.Application();//lauch excel application  
                 if (excel == null)
