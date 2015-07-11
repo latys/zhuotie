@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         private string filename;
+        Report report = new Report();
         public Form1()
         {
             InitializeComponent();
@@ -146,69 +147,151 @@ namespace WindowsFormsApplication1
      
         private void button3_Click(object sender, EventArgs e)
         {
-
+            int i=0, j=0;
             dbHepler db = new dbHepler();
 
-            string sql = "select * from [20028]  limit 20";
+            string sql = "select * from [20028]  limit 30";
            // string sql = "select * from [20028] where XH='128590'";
             DataSet Student = db.LoadData(sql);
-            Report report = new Report();
-            report.Load("Untitled.frx");
+            
+            //report.Load("Untitled.frx");
+            ;
+
+            //DataBand data = (DataBand)report.FindObject("data1");
+
+            for ( i = 0; i < Student.Tables[0].Rows.Count/10; i++)
+            {
+                ReportPage page1 = new ReportPage();
+
+                report.Pages.Add(page1);
+
+                 DataBand data = new DataBand();
+                page1.Bands.Add(data);
+                for ( j = 0; j < 10; j++)
+                {
+                  
+
+                    TextObject text1 = new TextObject();
+                    if (j % 2 == 0)
+                    {
+                        text1.Bounds = new RectangleF(Units.Centimeters * 4, Units.Centimeters * 3 * j, Units.Centimeters * 5, Units.Centimeters * 0.6f);
+                    }
+                    else
+                    {
+                        text1.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 4, Units.Centimeters * 3 * (j -1), Units.Centimeters * 5, Units.Centimeters * 0.6f);
+
+                    }
+
+                    text1.Text = Student.Tables[0].Rows[10*i+j]["name"].ToString();
+                    data.Objects.Add(text1);
 
 
-            // register the "Products" table
+                    PictureObject pic = new PictureObject();
+                    if (j % 2 == 0)
+                    {
+                        pic.Bounds = new RectangleF(0, Units.Centimeters * 3 * j, Units.Centimeters * 2, Units.Centimeters * 2);
+                    }
+                    else
+                    {
+                        pic.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (j - 1), Units.Centimeters * 2, Units.Centimeters * 2);
 
-            report.RegisterData(Student.Tables[0], "Student");
+                    }
+                    pic.Image = Image.FromFile("100001.jpg");
+                    data.Objects.Add(pic);
 
-            // enable it to use in a report
+                    BarcodeObject bar = new BarcodeObject();
+                    if (j % 2 == 0)
+                    {
+                        bar.Bounds = new RectangleF(0, Units.Centimeters * 3 * j + Units.Centimeters * 2.5f, Units.Centimeters * 8, Units.Centimeters * 2);
+                    }
+                    else
+                    {
+                        bar.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (j - 1) + Units.Centimeters * 2.5f, Units.Centimeters * 8, Units.Centimeters * 2);
 
-            report.GetDataSource("Student").Enabled = true;
+                    }
+                    //pic.Image = Image.FromFile("100001.jpg");
+                    bar.Text = Student.Tables[0].Rows[10 * i + j]["ZKZH"].ToString();
+                    data.Objects.Add(bar);
+
+                }
+
+            }
+
+            if ( Student.Tables[0].Rows.Count % 10 != 0)
+            {
+                Console.WriteLine((10 * i + j).ToString());
+                ReportPage page2 = new ReportPage();
+
+                report.Pages.Add(page2);
+
+                DataBand data2 = new DataBand();
+                page2.Bands.Add(data2);
+
+                for (int k = 10 * (i - 1) + j; k < Student.Tables[0].Rows.Count; k++)
+                {
 
 
-            GroupHeaderBand group1 = (GroupHeaderBand)report.FindObject("GroupHeader1");
+                    TextObject text1 = new TextObject();
+                    if (k % 2 == 0)
+                    {
+                        text1.Bounds = new RectangleF(Units.Centimeters * 4, Units.Centimeters * 3 * (k % 10), Units.Centimeters * 5, Units.Centimeters * 0.6f);
+                    }
+                    else
+                    {
+                        text1.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 4, Units.Centimeters * 3 * (k % 10 - 1), Units.Centimeters * 5, Units.Centimeters * 0.6f);
+
+                    }
+
+                    text1.Text = Student.Tables[0].Rows[k]["name"].ToString();
+                    data2.Objects.Add(text1);
 
 
+                    PictureObject pic = new PictureObject();
+                    if (k % 2 == 0)
+                    {
+                        pic.Bounds = new RectangleF(0, Units.Centimeters * 3 * k % 10, Units.Centimeters * 2, Units.Centimeters * 2);
+                    }
+                    else
+                    {
+                        pic.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (k % 10 - 1), Units.Centimeters * 2, Units.Centimeters * 2);
 
-            group1.Height = Units.Centimeters * 1;
+                    }
+                    pic.Image = Image.FromFile("100001.jpg");
+                    data2.Objects.Add(pic);
 
-            // set group condition
+                    BarcodeObject bar = new BarcodeObject();
+                    if (k % 2 == 0)
+                    {
+                        bar.Bounds = new RectangleF(0, Units.Centimeters * 3 * (k % 10) + Units.Centimeters * 2.5f, Units.Centimeters * 8, Units.Centimeters * 2);
+                    }
+                    else
+                    {
+                        bar.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (k % 10 - 1) + Units.Centimeters * 2.5f, Units.Centimeters * 8, Units.Centimeters * 2);
 
-            group1.Condition = "[Student.XH]";
+                    }
+                    //pic.Image = Image.FromFile("100001.jpg");
+                    bar.Text = Student.Tables[0].Rows[k]["ZKZH"].ToString();
+                    data2.Objects.Add(bar);
 
+                }
+            }
 
-
-            DataBand data = (DataBand)report.FindObject("data1");
-            // register the "Products" table
-
-
-
-
-            data.DataSource = report.GetDataSource("Student");
-
-
-
-            TextObject text2 = new TextObject();
-
-            text2.Name = "Text2";
-
-            text2.Bounds = new RectangleF(0, 0,
-
-              Units.Centimeters * 2, Units.Centimeters * 1);
-
-            text2.Text = "[Student.name]";
-
-            text2.Font = new Font("Tahoma", 10, FontStyle.Bold);
-            data.Objects.Add(text2);
-
-            // report.SetParameterValue("Parameter", "[Customers.CustLName]");
-            PictureObject pic = (PictureObject)report.FindObject("Picture1");
-            pic.Image = Image.FromFile("100001.jpg");
-
-         
-              // run the report*/
-            report.Preview = this.previewControl1;
+               
+                report.Preview = this.previewControl1;
             report.Prepare();
             report.Show();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            report.Prepare();
+            report.PrintPrepared();
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            report.Prepare();
+            report.PrintPrepared();
         }
     }
 }
