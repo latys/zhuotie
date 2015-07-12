@@ -133,6 +133,8 @@ namespace WindowsFormsApplication1
         }
         private delegate void setStatusDelegate(int num);
         private delegate void setStatusDelegate1();
+        private delegate string getsql();
+
         private void setStatus(int num)
         {
             progressBar1.Visible = true;
@@ -153,23 +155,27 @@ namespace WindowsFormsApplication1
             
 
         }
+
      
         private void button3_Click(object sender, EventArgs e)
         {
-           // Thread workerThread2 = new Thread(new ThreadStart(reportShow1));
-            //workerThread2.Start();
-            reportShow();
+            Thread workerThread2 = new Thread(new ThreadStart(reportShow));
+            workerThread2.Start();
+           // reportShow();
         }
         private void reportShow1()
         {
-            this.Invoke(new setStatusDelegate1(reportShow));
+            report.Preview = this.previewControl1;
+            report.Prepare();
+            report.Show();
         }
         private void reportShow()
         {
+            this.Invoke(new setStatusDelegate1(setStatus));
             int i = 0, j = 0;
             dbHepler db = new dbHepler();
 
-            string sql = generatesql();
+            string sql = this.Invoke(new getsql(generatesql)) as string;
             MessageBox.Show(sql);
             // string sql = "select * from [20028] where XH='128590'";
             DataSet Student = db.LoadData(sql);
@@ -297,11 +303,9 @@ namespace WindowsFormsApplication1
 
                 }
             }
-
-
-            report.Preview = this.previewControl1;
-            report.Prepare();
-            report.Show();
+            this.Invoke(new setStatusDelegate1(setStatus2));
+            this.Invoke(new setStatusDelegate1(reportShow1));
+          
         }
         private string generatesql()
         {
@@ -357,6 +361,7 @@ namespace WindowsFormsApplication1
             {
                 sql1 = sql;
             }
+            sql1 = sql1 + "order by (substr(ZKZH,6,1)||'-'||substr(ZKZH,11,5)) ";
             MessageBox.Show(sql1);
             return sql1;
         
