@@ -14,7 +14,8 @@ using FastReport.Controls;
 using System.Data.SQLite;
 using System.Threading;
 using System.Diagnostics;
-using Excel = Microsoft.Office.Interop.Excel; 
+using Excel = Microsoft.Office.Interop.Excel;
+using System.IO;
 
 
 namespace WindowsFormsApplication1
@@ -27,8 +28,16 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             progressBar1.Visible = false;
+            //初始化考场
+            string sql = "SELECT (substr(ZKZH,6,1)||'-'||substr(ZKZH,11,3)) as KAOCHANG from [20028]";
 
-
+            dbHepler db = new dbHepler();
+            DataSet KAOCHANG = db.LoadData(sql);
+            comboBox1.DisplayMember = "KAOCHANG";
+            comboBox1.ValueMember = "KAOCHANG";
+            comboBox1.DataSource = KAOCHANG.Tables[0];
+            
+            string sql1 = generatesql();
             // report.PrintPrepared();
         }
 
@@ -147,29 +156,40 @@ namespace WindowsFormsApplication1
      
         private void button3_Click(object sender, EventArgs e)
         {
-            int i=0, j=0;
+           // Thread workerThread2 = new Thread(new ThreadStart(reportShow1));
+            //workerThread2.Start();
+            reportShow();
+        }
+        private void reportShow1()
+        {
+            this.Invoke(new setStatusDelegate1(reportShow));
+        }
+        private void reportShow()
+        {
+            int i = 0, j = 0;
             dbHepler db = new dbHepler();
 
-            string sql = "select * from [20028]  limit 30";
-           // string sql = "select * from [20028] where XH='128590'";
+            string sql = generatesql();
+            MessageBox.Show(sql);
+            // string sql = "select * from [20028] where XH='128590'";
             DataSet Student = db.LoadData(sql);
-            
+            report.Pages.Clear();
             //report.Load("Untitled.frx");
             ;
 
             //DataBand data = (DataBand)report.FindObject("data1");
 
-            for ( i = 0; i < Student.Tables[0].Rows.Count/10; i++)
+            for (i = 0; i < Student.Tables[0].Rows.Count / 10; i++)
             {
                 ReportPage page1 = new ReportPage();
 
                 report.Pages.Add(page1);
 
-                 DataBand data = new DataBand();
+                DataBand data = new DataBand();
                 page1.Bands.Add(data);
-                for ( j = 0; j < 10; j++)
+                for (j = 0; j < 10; j++)
                 {
-                  
+
 
                     TextObject text1 = new TextObject();
                     if (j % 2 == 0)
@@ -178,11 +198,11 @@ namespace WindowsFormsApplication1
                     }
                     else
                     {
-                        text1.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 4, Units.Centimeters * 3 * (j -1), Units.Centimeters * 5, Units.Centimeters * 0.6f);
+                        text1.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 4, Units.Centimeters * 3 * (j - 1), Units.Centimeters * 5, Units.Centimeters * 0.6f);
 
                     }
 
-                    text1.Text = Student.Tables[0].Rows[10*i+j]["name"].ToString();
+                    text1.Text = Student.Tables[0].Rows[10 * i + j]["name"].ToString();
                     data.Objects.Add(text1);
 
 
@@ -196,7 +216,8 @@ namespace WindowsFormsApplication1
                         pic.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (j - 1), Units.Centimeters * 2, Units.Centimeters * 2);
 
                     }
-                    pic.Image = Image.FromFile("100001.jpg");
+                    if (File.Exists("./" + "20"+Student.Tables[0].Rows[10 * i + j]["XH"].ToString().Substring(0,2) + "/" + Student.Tables[0].Rows[10 * i + j]["XH"].ToString()+ ".jpg"))
+                        pic.Image = Image.FromFile("./" +"20"+ Student.Tables[0].Rows[10 * i + j]["XH"].ToString().Substring(0,2) + "/" + Student.Tables[0].Rows[10 * i + j]["XH"].ToString() + ".jpg");
                     data.Objects.Add(pic);
 
                     BarcodeObject bar = new BarcodeObject();
@@ -217,7 +238,7 @@ namespace WindowsFormsApplication1
 
             }
 
-            if ( Student.Tables[0].Rows.Count % 10 != 0)
+            if (Student.Tables[0].Rows.Count % 10 != 0)
             {
                 Console.WriteLine((10 * i + j).ToString());
                 ReportPage page2 = new ReportPage();
@@ -256,7 +277,8 @@ namespace WindowsFormsApplication1
                         pic.Bounds = new RectangleF(Units.Centimeters * 9 + Units.Centimeters * 0, Units.Centimeters * 3 * (k % 10 - 1), Units.Centimeters * 2, Units.Centimeters * 2);
 
                     }
-                    pic.Image = Image.FromFile("100001.jpg");
+                    if (File.Exists("./" + "20" + Student.Tables[0].Rows[k]["XH"].ToString().Substring(0,2) + "/" + Student.Tables[0].Rows[k]["XH"].ToString() + ".jpg"))
+                        pic.Image = Image.FromFile("./" + "20"+Student.Tables[0].Rows[k]["XH"].ToString().Substring(0,2) + "/" + Student.Tables[0].Rows[k]["XH"].ToString()+ ".jpg");
                     data2.Objects.Add(pic);
 
                     BarcodeObject bar = new BarcodeObject();
@@ -276,12 +298,69 @@ namespace WindowsFormsApplication1
                 }
             }
 
-               
-                report.Preview = this.previewControl1;
+
+            report.Preview = this.previewControl1;
             report.Prepare();
             report.Show();
         }
-
+        private string generatesql()
+        {
+            string sql = "select * from [20028]";
+            string sql1;
+            if (comboBox1.Text == "" && comboBox2.Text == "" && comboBox3.Text == "" && comboBox4.Text == "")
+            {
+                //MessageBox.Show("null");
+                sql = "select * from [20028]";
+            }
+            else 
+            {
+                MessageBox.Show(comboBox1.Text);
+                sql = sql + "where";
+                if (comboBox1.Text != "")
+                    sql = sql + " substr(ZKZH,6,1)||'-'||substr(ZKZH,11,3)='" + comboBox1.Text+"'"+ " and";
+                if (comboBox2.Text != "")
+                {  
+                    if(comboBox2.Text=="四级")
+                        sql = sql + " substr(ZKZH,9,1)=" + "'1'" + " and";
+                    if (comboBox2.Text == "六级")
+                        sql = sql + " substr(ZKZH,9,1)=" + "'1'" + " and";
+                }
+                if (comboBox3.Text != "")
+                {
+                    if (comboBox3.Text == "日语")
+                        sql = sql + " substr(ZKZH,10,1)=" + "'3'" + " and";
+                    if (comboBox3.Text == "法语")
+                        sql = sql + " substr(ZKZH,10,1)=" + "'7'" + " and";
+                    if (comboBox3.Text == "俄语")
+                        sql = sql + " substr(ZKZH,10,1)=" + "'9'" + " and";
+                }
+                if (comboBox4.Text != "")
+                {
+                    if (comboBox4.Text == "丁字沽")
+                        sql = sql + " substr(ZKZH,6,1)=" + "'1'";
+                    if (comboBox4.Text == "北辰")
+                        sql = sql + " substr(ZKZH,6,1)=" + "'2'" ;
+                    if (comboBox4.Text == "廊坊")
+                        sql = sql + " substr(ZKZH,6,1)=" + "'3'";
+                }
+               
+                
+               
+               
+            }
+            int length = sql.Length;
+            if (sql.Substring(sql.Length - 3, 3).Equals("and"))
+            {
+                 sql1 = sql.Remove(length - 3, 3);
+            }
+            else
+            {
+                sql1 = sql;
+            }
+            MessageBox.Show(sql1);
+            return sql1;
+        
+        }
         private void button2_Click(object sender, EventArgs e)
         {
             report.Prepare();
@@ -293,5 +372,7 @@ namespace WindowsFormsApplication1
             report.Prepare();
             report.PrintPrepared();
         }
+
+
     }
 }
